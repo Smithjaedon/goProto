@@ -1,0 +1,14 @@
+# Binaries
+goProto
+main
+*.exe
+
+# Build output
+/dist/
+
+# Environment
+.env
+*.env
+
+# OS
+.DS_Store
