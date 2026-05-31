@@ -49,7 +49,7 @@ func runCreate(cmd *cobra.Command, args []string) {
 
 func createAPIStructure() {
 	framework, database := blueprint()
-	cmd := exec.Command("go-blueprint", "create", "--name", "myproject", "--framework", framework, "--database", database)
+	cmd := exec.Command("go-blueprint", "create", "--name", "myproject", "--framework", framework, "--database", database, "--git", "commit")
 	if err := cmd.Run(); err != nil {
 		log.Fatal(err)
 	}
