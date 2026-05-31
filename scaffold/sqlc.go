@@ -13,7 +13,7 @@ func GenerateSqlcFiles(projectPath, database string) {
 		projectPath+"/sqlc/schema.sql",
 		projectPath+"/sqlc/queries.sql")
 	if err := cmd.Run(); err != nil {
-		log.Fatal(err)
+		log.Fatalf("failed to create sqlc schema and queries files: %v", err)
 	}
 
 	content := fmt.Sprintf(`
@@ -31,12 +31,12 @@ sql:
 
 	file, err := os.Create(projectPath + "/sqlc/sqlc.yaml")
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("failed to create sqlc.yaml at %s: %v", projectPath+"/sqlc/sqlc.yaml", err)
 	}
 	defer file.Close()
 
 	_, err = file.WriteString(content)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("failed to write sqlc.yaml: %v", err)
 	}
 }

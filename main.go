@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"goProto/cmd"
+	"goproto/cmd"
 
 	"github.com/spf13/cobra"
 )

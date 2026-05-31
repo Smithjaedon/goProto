@@ -1,4 +1,4 @@
-module goProto
+module goproto
 
 go 1.26.3
 

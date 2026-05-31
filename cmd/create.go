@@ -6,7 +6,7 @@ import (
 	"os"
 	"os/exec"
 
-	"goProto/scaffold"
+	"goproto/scaffold"
 
 	"charm.land/huh/v2"
 	"github.com/spf13/cobra"
@@ -34,12 +34,11 @@ func runCreate(cmd *cobra.Command, args []string) {
 				Value(&structure)))
 	err := form.Run()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("failed to run prompt form: %v", err)
 	}
 
 	switch structure {
 	case "api":
-		log.Println("API structure selected")
 		createAPIStructure()
 	case "normal":
 		log.Println("Normal structure selected")
@@ -52,13 +51,19 @@ func runCreate(cmd *cobra.Command, args []string) {
 func createAPIStructure() {
 
 	framework, database := blueprint()
+
 	initInTmp(framework, database)
 
+	if database == "postgres" {
+		database = "pgx"
+	}
 	projectPath, err := os.Getwd()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("failed to get current working directory in createAPIStructure: %v", err)
 	}
 	scaffold.GenerateSqlcFiles(projectPath, database)
+	scaffold.GenerateReadmeFile(projectPath)
+	scaffold.GenerateGooseFiles(projectPath, database)
 }
 
 func createNormalStructure() {
@@ -77,17 +82,17 @@ func blueprint() (frmwrk, dbase string) {
 			huh.NewOption("Net/http", "net/http"),
 		).
 		Value(&framework).Run(); err != nil {
-		log.Fatal(err)
+		log.Fatalf("failed to select framework: %v", err)
 	}
 
 	if err := huh.NewSelect[string]().
 		Title("What Type of Database Do You Want?").
 		Options(
-			huh.NewOption("PostgreSQL", "pgx"),
+			huh.NewOption("PostgreSQL", "postgres"),
 			huh.NewOption("SQLite", "sqlite"),
 		).
 		Value(&database).Run(); err != nil {
-		log.Fatal(err)
+		log.Fatalf("failed to select database: %v", err)
 	}
 
 	return framework, database
@@ -96,13 +101,13 @@ func blueprint() (frmwrk, dbase string) {
 func initInTmp(framework, database string) {
 	tmpDir, err := os.MkdirTemp("", "tmp")
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("failed to create temp directory: %v", err)
 	}
 	defer os.RemoveAll(tmpDir)
 
 	projectPath, err := os.Getwd()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("failed to get current working directory: %v", err)
 	}
 
 	cmd := exec.Command("go-blueprint", "create",
@@ -113,11 +118,11 @@ func initInTmp(framework, database string) {
 	)
 	cmd.Dir = tmpDir
 	if err := cmd.Run(); err != nil {
-		log.Fatal(err)
+		log.Fatalf("failed to run go-blueprint command: %v", err)
 	}
 
 	mv := exec.Command("bash", "-c", fmt.Sprintf("mv %s/myproject/* %s/ && mv %s/myproject/.* %s/ 2>/dev/null && rm -rf %s/myproject", tmpDir, projectPath, tmpDir, projectPath, tmpDir))
 	if err := mv.Run(); err != nil {
-		log.Fatal(err)
+		log.Fatalf("failed to move files from temporary blueprint: %v", err)
 	}
 }

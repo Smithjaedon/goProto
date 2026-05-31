@@ -79,7 +79,7 @@ func runPlan(cmd *cobra.Command, args []string) {
 
 	newfile, err := os.Create("plan.md")
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("failed to create plan.md: %v", err)
 	}
 	defer newfile.Close()
 	newfile.WriteString(content)

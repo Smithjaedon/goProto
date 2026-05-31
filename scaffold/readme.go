@@ -8,7 +8,7 @@ import (
 func GenerateReadmeFile(projectPath string) {
 	f, err := os.Create(projectPath + "/goProto.md")
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("failed to create README file at %s: %v", projectPath+"/goProto.md", err)
 	}
 
 	defer f.Close()
@@ -131,7 +131,7 @@ This will copy the relevant template files directly into your project. GoProto s
 - [x] In-place project scaffolding (no forced subdirectory)
 - [x] Go Blueprint wrapper with framework + database selection
 - [x] sqlc configuration generation
-- [ ] Goose migration setup
+- [x] Goose migration setup
 - [ ] Makefile with common commands
 - [ ] ` + "`normal`" + ` project type
 - [ ] Template system (` + "`goproto add <template>`" + `)
@@ -146,6 +146,6 @@ GoProto is a personal tool built for my own workflow. It's opinionated by design
 
 	_, err = f.WriteString(content)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("failed to write README content to %s: %v", projectPath+"/goproto.md", err)
 	}
 }
