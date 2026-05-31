@@ -74,6 +74,7 @@ func blueprint() (frmwrk, dbase string) {
 		Options(
 			huh.NewOption("Chi", "chi"),
 			huh.NewOption("Gin", "gin"),
+			huh.NewOption("Net/http", "net/http"),
 		).
 		Value(&framework).Run(); err != nil {
 		log.Fatal(err)
