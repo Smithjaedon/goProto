@@ -48,10 +48,8 @@ func runCreate(cmd *cobra.Command, args []string) {
 }
 
 func createAPIStructure() {
-	cmd := exec.Command("go-blueprint", "create")
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	cmd.Stdin = os.Stdin
+	framework, database := blueprint()
+	cmd := exec.Command("go-blueprint", "create", "--name", "myproject", "--framework", framework, "--database", database)
 	if err := cmd.Run(); err != nil {
 		log.Fatal(err)
 	}
@@ -67,27 +65,6 @@ func createAPIStructure() {
 		log.Fatal(err)
 	}
 
-	var databaseEngine string
-
-	if err := huh.NewSelect[string]().
-		Title("What Database Engine Do You Want?").
-		Options(
-			huh.NewOption("PostgreSQL", "postgresql"),
-			huh.NewOption("SQLite", "sqlite"),
-			huh.NewOption("Other", "other"),
-		).
-		Value(&databaseEngine).Run(); err != nil {
-		log.Fatal(err)
-	}
-
-	if databaseEngine == "other" {
-		if err := huh.NewText().
-			Title("Please specify the database engine you want to use.").
-			Value(&databaseEngine).Run(); err != nil {
-			log.Fatal(err)
-		}
-	}
-
 	content := fmt.Sprintf(`
 version: "2"
 sql:
@@ -99,8 +76,7 @@ sql:
         package: "db"
         out: "../db"
 
-	`, databaseEngine)
-
+	`, database)
 
 	file, err := os.Create(projectPath + "/sqlc.yaml")
 	if err != nil {
@@ -117,4 +93,30 @@ sql:
 func createNormalStructure() {
 	log.Println("Creating Normal structure...")
 	// Implement the logic to create a normal project structure
+}
+
+func blueprint() (frmwrk, dbase string) {
+	var framework string
+	var database string
+	if err := huh.NewSelect[string]().
+		Title("What Framework Do You Want?").
+		Options(
+			huh.NewOption("Chi", "chi"),
+			huh.NewOption("Gin", "gin"),
+		).
+		Value(&framework).Run(); err != nil {
+		log.Fatal(err)
+	}
+
+	if err := huh.NewSelect[string]().
+		Title("What Type of Database Do You Want?").
+		Options(
+			huh.NewOption("PostgreSQL", "pgx"),
+			huh.NewOption("SQLite", "sqlite"),
+		).
+		Value(&database).Run(); err != nil {
+		log.Fatal(err)
+	}
+
+	return framework, database
 }
