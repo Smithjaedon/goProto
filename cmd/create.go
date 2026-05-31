@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"os/exec"
@@ -52,6 +53,63 @@ func createAPIStructure() {
 	cmd.Stderr = os.Stderr
 	cmd.Stdin = os.Stdin
 	if err := cmd.Run(); err != nil {
+		log.Fatal(err)
+	}
+	projectPath, err := os.Getwd()
+	if err != nil {
+		log.Fatal(err)
+	}
+	os.Mkdir(projectPath+"/sqlc", 0755)
+	cmd = exec.Command("touch",
+		projectPath+"/sqlc/schema.sql",
+		projectPath+"/sqlc/queries.sql")
+	if err := cmd.Run(); err != nil {
+		log.Fatal(err)
+	}
+
+	var databaseEngine string
+
+	if err := huh.NewSelect[string]().
+		Title("What Database Engine Do You Want?").
+		Options(
+			huh.NewOption("PostgreSQL", "postgresql"),
+			huh.NewOption("SQLite", "sqlite"),
+			huh.NewOption("Other", "other"),
+		).
+		Value(&databaseEngine).Run(); err != nil {
+		log.Fatal(err)
+	}
+
+	if databaseEngine == "other" {
+		if err := huh.NewText().
+			Title("Please specify the database engine you want to use.").
+			Value(&databaseEngine).Run(); err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	content := fmt.Sprintf(`
+version: "2"
+sql:
+  - engine: "%v"
+    queries: "query.sql"
+    schema: "schema.sql"
+    gen:
+      go:
+        package: "db"
+        out: "../db"
+
+	`, databaseEngine)
+
+
+	file, err := os.Create(projectPath + "/sqlc.yaml")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+
+	_, err = file.WriteString(content)
+	if err != nil {
 		log.Fatal(err)
 	}
 }
