@@ -48,17 +48,16 @@ func runCreate(cmd *cobra.Command, args []string) {
 }
 
 func createAPIStructure() {
+
 	framework, database := blueprint()
-	cmd := exec.Command("go-blueprint", "create", "--name", "myproject", "--framework", framework, "--database", database, "--git", "commit")
-	if err := cmd.Run(); err != nil {
-		log.Fatal(err)
-	}
+	initInTmp(framework, database)
+
 	projectPath, err := os.Getwd()
 	if err != nil {
 		log.Fatal(err)
 	}
 	os.Mkdir(projectPath+"/sqlc", 0755)
-	cmd = exec.Command("touch",
+	cmd := exec.Command("touch",
 		projectPath+"/sqlc/schema.sql",
 		projectPath+"/sqlc/queries.sql")
 	if err := cmd.Run(); err != nil {
@@ -78,7 +77,7 @@ sql:
 
 	`, database)
 
-	file, err := os.Create(projectPath + "/sqlc.yaml")
+	file, err := os.Create(projectPath + "/sqlc/sqlc.yaml")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -119,4 +118,33 @@ func blueprint() (frmwrk, dbase string) {
 	}
 
 	return framework, database
+}
+
+func initInTmp(framework, database string) {
+	tmpDir, err := os.MkdirTemp("", "tmp")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer os.RemoveAll(tmpDir)
+
+	projectPath, err := os.Getwd()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	cmd := exec.Command("go-blueprint", "create",
+		"--name", "myproject",
+		"--framework", framework,
+		"--driver", database,
+		"--git", "skip",
+	)
+	cmd.Dir = tmpDir
+	if err := cmd.Run(); err != nil {
+		log.Fatal(err)
+	}
+
+	mv := exec.Command("bash", "-c", fmt.Sprintf("mv %s/myproject/* %s/ && mv %s/myproject/.* %s/ 2>/dev/null && rm -rf %s/myproject", tmpDir, projectPath, tmpDir, projectPath, tmpDir))
+	if err := mv.Run(); err != nil {
+		log.Fatal(err)
+	}
 }
