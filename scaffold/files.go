@@ -1,23 +1,44 @@
 package scaffold
 
 import (
+	"embed"
 	"log"
 	"os"
-	"path/filepath"
-	"strings"
+	"text/template"
 )
 
-func modifyDatabase(projectPath string) {
-	dirName := filepath.Base(projectPath)
+//go:embed templates
+var templateFiles embed.FS
 
-	content, err := os.ReadFile(projectPath + "/.env")
-	if err != nil {
-		log.Fatalf("failed to read .env file at %s: %v", projectPath+"/.env", err)
+type ProjectConfig struct {
+	ModuleName string
+	Database   string
+}
+
+func ModifyDatabase(projectPath, moduleName, database string) {
+	config := ProjectConfig{
+		ModuleName: moduleName,
+		Database:   database,
 	}
-	data := string(content)
 
-	data = strings.Replace(data, "import (", "import (\n\tdb \""+dirName+"/db\"", 1)
+	generateFile("templates/sqlc/database.go.tmpl", projectPath+"/internal/database/database.go", config)
+	generateFile("templates/sqlc/server.go.tmpl", projectPath+"/internal/server/server.go", config)
+}
 
-  data = strings.Replace(data, "sqlc.Queries", "db.Queries", -1)
+func generateFile(templatePath, outputPath string, config ProjectConfig) {
+	tmpl, err := template.ParseFS(templateFiles, templatePath)
+	if err != nil {
+		log.Fatalf("failed to parse %s template: %v", outputPath, err)
+	}
 
+	f, err := os.Create(outputPath)
+	if err != nil {
+		log.Fatalf("failed to create %s file: %v", outputPath, err)
+	}
+	defer f.Close()
+
+	err = tmpl.Execute(f, config)
+	if err != nil {
+		log.Fatalf("failed to execute %s template: %v", outputPath, err)
+	}
 }

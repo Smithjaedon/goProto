@@ -15,8 +15,9 @@ func GenerateSqlcFiles(projectPath, database string) {
 	if err := cmd.Run(); err != nil {
 		log.Fatalf("failed to create sqlc schema and queries files: %v", err)
 	}
-
-	content := fmt.Sprintf(`
+	var content string
+	if database != "postgres" {
+		content = fmt.Sprintf(`
 version: "2"
 sql:
   - engine: "%v"
@@ -28,6 +29,20 @@ sql:
         out: "../db"
 
 	`, database)
+	} else {
+		content = `
+version: "2"
+sql:
+  - engine: "postgresql"
+    queries: "query.sql"
+    schema: "schema.sql"
+    gen:
+      go:
+        package: "db"
+        out: "../db"
+        sql_package: "pgx/v5"
+`
+	}
 
 	file, err := os.Create(projectPath + "/sqlc/sqlc.yaml")
 	if err != nil {

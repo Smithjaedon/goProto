@@ -55,15 +55,20 @@ func createAPIStructure() {
 
 	initInTmp(framework, database)
 
-	if database == "postgres" {
-		database = "pgx"
-	}
 	projectPath, err := os.Getwd()
 	if err != nil {
 		log.Fatalf("failed to get current working directory in createAPIStructure: %v", err)
 	}
+
+	dirName := filepath.Base(projectPath)
+
+	scaffold.ModifyDatabase(projectPath, dirName, database)
+
 	scaffold.GenerateSqlcFiles(projectPath, database)
 	scaffold.GenerateReadmeFile(projectPath)
+	if database == "postgres" {
+		database = "pgx"
+	}
 	scaffold.GenerateGooseFiles(projectPath, database)
 }
 
@@ -124,7 +129,12 @@ func initInTmp(framework, database string) {
 		log.Fatalf("failed to run go-blueprint command: %v", err)
 	}
 
-	mv := exec.Command("bash", "-c", fmt.Sprintf("mv %s/myproject/* %s/ && mv %s/myproject/.* %s/ 2>/dev/null && rm -rf %s/myproject", tmpDir, projectPath, tmpDir, projectPath, tmpDir))
+	mv := exec.Command("bash", "-c", fmt.Sprintf(
+		"mv %s/%s/* %s/ && mv %s/%s/.* %s/ 2>/dev/null; rm -rf %s/%s",
+		tmpDir, dirName, projectPath,
+		tmpDir, dirName, projectPath,
+		tmpDir, dirName,
+	))
 	if err := mv.Run(); err != nil {
 		log.Fatalf("failed to move files from temporary blueprint: %v", err)
 	}
