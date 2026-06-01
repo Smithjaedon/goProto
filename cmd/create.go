@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
 
 	"goproto/scaffold"
 
@@ -110,8 +111,10 @@ func initInTmp(framework, database string) {
 		log.Fatalf("failed to get current working directory: %v", err)
 	}
 
+	dirName := filepath.Base(projectPath)
+
 	cmd := exec.Command("go-blueprint", "create",
-		"--name", "myproject",
+		"--name", dirName,
 		"--framework", framework,
 		"--driver", database,
 		"--git", "skip",
