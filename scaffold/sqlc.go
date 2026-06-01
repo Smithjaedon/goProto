@@ -11,7 +11,7 @@ func GenerateSqlcFiles(projectPath, database string) {
 	os.Mkdir(projectPath+"/sqlc", 0755)
 	cmd := exec.Command("touch",
 		projectPath+"/sqlc/schema.sql",
-		projectPath+"/sqlc/queries.sql")
+		projectPath+"/sqlc/query.sql")
 	if err := cmd.Run(); err != nil {
 		log.Fatalf("failed to create sqlc schema and queries files: %v", err)
 	}
