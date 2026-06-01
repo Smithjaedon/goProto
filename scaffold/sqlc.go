@@ -40,7 +40,6 @@ sql:
       go:
         package: "db"
         out: "../db"
-        sql_package: "pgx/v5"
 `
 	}
 

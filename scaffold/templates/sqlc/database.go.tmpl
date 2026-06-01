@@ -31,8 +31,8 @@ type service struct {
 }
 
 var (
-  {{if eq .Database "postgres"}}dburl      = os.Getenv("BLUEPRINT_DB_URL"){{end}}
-  {{if eq .Database "sqlite"}}database   = os.Getenv("BLUEPRINT_DB_DATABASE")
+  {{if eq .Database "sqlite"}}dburl      = os.Getenv("BLUEPRINT_DB_URL"){{end}}
+  {{if eq .Database "postgres"}}database   = os.Getenv("BLUEPRINT_DB_DATABASE")
 password   = os.Getenv("BLUEPRINT_DB_PASSWORD")
 username   = os.Getenv("BLUEPRINT_DB_USERNAME")
 port       = os.Getenv("BLUEPRINT_DB_PORT")

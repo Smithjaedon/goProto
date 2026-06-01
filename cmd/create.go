@@ -70,6 +70,7 @@ func createAPIStructure() {
 		database = "pgx"
 	}
 	scaffold.GenerateGooseFiles(projectPath, database)
+	scaffold.AppendToMakefile(projectPath)
 }
 
 func createNormalStructure() {
@@ -137,5 +138,9 @@ func initInTmp(framework, database string) {
 	))
 	if err := mv.Run(); err != nil {
 		log.Fatalf("failed to move files from temporary blueprint: %v", err)
+	}
+
+	if database == "postgres" {
+		scaffold.AddDatabaseTest(projectPath)
 	}
 }
