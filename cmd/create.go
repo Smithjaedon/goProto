@@ -72,6 +72,11 @@ func createAPIStructure() {
 	scaffold.GenerateGooseFiles(projectPath, database)
 	scaffold.AppendToMakefile(projectPath)
 
+	// handlers
+	err = os.Mkdir(projectPath+"/internal/server/handlers", 0755)
+	if err != nil {
+		log.Fatalf("failed to create handlers directory: %v", err)
+	}
 }
 
 func createNormalStructure() {
