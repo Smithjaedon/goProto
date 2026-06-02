@@ -132,7 +132,7 @@ This will copy the relevant template files directly into your project. GoProto s
 - [x] Go Blueprint wrapper with framework + database selection
 - [x] sqlc configuration generation
 - [x] Goose migration setup
-- [ ] Makefile with common commands
+- [x] Makefile with common commands
 - [ ] ` + "`normal`" + ` project type
 - [ ] Template system (` + "`goproto add <template>`" + `)
 - [ ] Custom user templates

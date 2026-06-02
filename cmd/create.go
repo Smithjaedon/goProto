@@ -40,6 +40,7 @@ func runCreate(cmd *cobra.Command, args []string) {
 
 	switch structure {
 	case "api":
+		log.Println("Generating...")
 		createAPIStructure()
 	case "normal":
 		log.Println("Normal structure selected")
@@ -50,7 +51,6 @@ func runCreate(cmd *cobra.Command, args []string) {
 }
 
 func createAPIStructure() {
-
 	framework, database := blueprint()
 
 	initInTmp(framework, database)
@@ -71,6 +71,7 @@ func createAPIStructure() {
 	}
 	scaffold.GenerateGooseFiles(projectPath, database)
 	scaffold.AppendToMakefile(projectPath)
+
 }
 
 func createNormalStructure() {
