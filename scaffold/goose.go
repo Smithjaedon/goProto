@@ -5,7 +5,7 @@ import (
 	"os"
 )
 
-func GenerateGooseFiles(projectPath, database string) {
+func GenerateGooseFiles(projectPath string) {
 	err := os.Mkdir(projectPath+"/migrations", 0755)
 	if err != nil {
 		log.Fatalf("failed to create migrations directory '%s': %v", projectPath+"/migrations", err)
@@ -17,22 +17,10 @@ func GenerateGooseFiles(projectPath, database string) {
 	}
 	defer f.Close()
 
-	var content string
-
-	switch database {
-	case "pgx":
-		content = `GOOSE_DRIVER=pgx
+	content := `GOOSE_DRIVER=pgx
 GOOSE_DBSTRING=postgresql://username:password@localhost:port/dbname?sslmode=disable&search_path=public
 GOOSE_MIGRATION_DIR=./migrations/
 `
-	case "sqlite":
-		content = `GOOSE_DRIVER=sqlite3
-GOOSE_DBSTRING=./test.db
-GOOSE_MIGRATION_DIR=./migrations/
-`
-	default:
-		log.Fatalf("unsupported database type for Goose configuration: %s", database)
-	}
 
 	_, err = f.WriteString(content)
 	if err != nil {

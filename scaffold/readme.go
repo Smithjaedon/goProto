@@ -34,7 +34,6 @@ A personal CLI scaffolding tool for Go projects. GoProto automates the tedious p
 | Type | Description |
 |------|-------------|
 | ` + "`api`" + ` | REST API project with framework + database setup |
-| ` + "`normal`" + ` | General Go project with standard structure (no database) — *coming soon* |
 
 ---
 
@@ -43,13 +42,9 @@ A personal CLI scaffolding tool for Go projects. GoProto automates the tedious p
 **Frameworks**
 
 - Gin
-- Chi
-- ` + "`net/http`" + ` (standard library)
-
 **Databases**
 
 - PostgreSQL (via pgx)
-- SQLite
 
 ---
 
@@ -87,13 +82,6 @@ mkdir my-project && cd my-project
 ` + "```bash" + `
 goproto
 ` + "```" + `
-
-3. Answer the prompts:
-   - Project type (` + "`api`" + ` or ` + "`normal`" + `)
-   - Framework (` + "`gin`" + `, ` + "`chi`" + `, ` + "`net/http`" + `)
-   - Database (` + "`postgres`" + `, ` + "`sqlite`" + `)
-
-GoProto will scaffold the full project structure, configure sqlc, and set up your migrations directory.
 
 ---
 

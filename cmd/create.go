@@ -9,7 +9,6 @@ import (
 
 	"goproto/scaffold"
 
-	"charm.land/huh/v2"
 	"github.com/spf13/cobra"
 )
 
@@ -22,38 +21,11 @@ func CreateCmd() *cobra.Command {
 }
 
 func runCreate(cmd *cobra.Command, args []string) {
-	var structure string
-
-	form := huh.NewForm(
-		huh.NewGroup(
-			huh.NewSelect[string]().
-				Title("What Project Structure Do You Want?").
-				Options(
-					huh.NewOption("API", "api"),
-					huh.NewOption("Normal", "normal"),
-				).
-				Value(&structure)))
-	err := form.Run()
-	if err != nil {
-		log.Fatalf("failed to run prompt form: %v", err)
-	}
-
-	switch structure {
-	case "api":
-		log.Println("Generating...")
-		createAPIStructure()
-	case "normal":
-		log.Println("Normal structure selected")
-		createNormalStructure()
-	default:
-		log.Println("Invalid structure selected")
-	}
+	createAPIStructure()
 }
 
 func createAPIStructure() {
-	framework, database := blueprint()
-
-	initInTmp(framework, database)
+	initInTmp()
 
 	projectPath, err := os.Getwd()
 	if err != nil {
@@ -62,14 +34,11 @@ func createAPIStructure() {
 
 	dirName := filepath.Base(projectPath)
 
-	scaffold.ModifyDatabase(projectPath, dirName, database)
+	scaffold.ModifyDatabase(projectPath, dirName)
 
-	scaffold.GenerateSqlcFiles(projectPath, database)
+	scaffold.GenerateSqlcFiles(projectPath)
 	scaffold.GenerateReadmeFile(projectPath)
-	if database == "postgres" {
-		database = "pgx"
-	}
-	scaffold.GenerateGooseFiles(projectPath, database)
+	scaffold.GenerateGooseFiles(projectPath)
 	scaffold.AppendToMakefile(projectPath)
 
 	// handlers
@@ -79,39 +48,7 @@ func createAPIStructure() {
 	}
 }
 
-func createNormalStructure() {
-	log.Println("Creating Normal structure...")
-	// Implement the logic to create a normal project structure
-}
-
-func blueprint() (frmwrk, dbase string) {
-	var framework string
-	var database string
-	if err := huh.NewSelect[string]().
-		Title("What Framework Do You Want?").
-		Options(
-			huh.NewOption("Chi", "chi"),
-			huh.NewOption("Gin", "gin"),
-			huh.NewOption("Net/http", "net/http"),
-		).
-		Value(&framework).Run(); err != nil {
-		log.Fatalf("failed to select framework: %v", err)
-	}
-
-	if err := huh.NewSelect[string]().
-		Title("What Type of Database Do You Want?").
-		Options(
-			huh.NewOption("PostgreSQL", "postgres"),
-			huh.NewOption("SQLite", "sqlite"),
-		).
-		Value(&database).Run(); err != nil {
-		log.Fatalf("failed to select database: %v", err)
-	}
-
-	return framework, database
-}
-
-func initInTmp(framework, database string) {
+func initInTmp() {
 	tmpDir, err := os.MkdirTemp("", "tmp")
 	if err != nil {
 		log.Fatalf("failed to create temp directory: %v", err)
@@ -127,8 +64,8 @@ func initInTmp(framework, database string) {
 
 	cmd := exec.Command("go-blueprint", "create",
 		"--name", dirName,
-		"--framework", framework,
-		"--driver", database,
+		"--framework", "gin",
+		"--driver", "postgres",
 		"--git", "skip",
 	)
 	cmd.Dir = tmpDir
@@ -146,7 +83,5 @@ func initInTmp(framework, database string) {
 		log.Fatalf("failed to move files from temporary blueprint: %v", err)
 	}
 
-	if database == "postgres" {
-		scaffold.AddDatabaseTest(projectPath)
-	}
+	scaffold.AddDatabaseTest(projectPath)
 }

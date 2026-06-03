@@ -15,10 +15,10 @@ type ProjectConfig struct {
 	Database   string
 }
 
-func ModifyDatabase(projectPath, moduleName, database string) {
+func ModifyDatabase(projectPath, moduleName string) {
 	config := ProjectConfig{
 		ModuleName: moduleName,
-		Database:   database,
+		Database:   "postgres",
 	}
 
 	generateFile("templates/sqlc/database.go.tmpl", projectPath+"/internal/database/database.go", config)
