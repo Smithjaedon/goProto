@@ -43,21 +43,89 @@ func generateFile(templatePath, outputPath string, config ProjectConfig) {
 	}
 }
 
-func AppendToMakefile(projectPath string) {
-	f, err := os.OpenFile(projectPath+"/Makefile", os.O_APPEND|os.O_WRONLY, 0644)
+func WriteMakefile(projectPath string) {
+	f, err := os.OpenFile(projectPath+"/Makefile", os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
 	if err != nil {
 		log.Fatalf("failed to open Makefile: %v", err)
 	}
 	defer f.Close()
 
-	content := `generate:
-		cd sqlc && sqlc generate
-	`
+	content := `# Simple Makefile for a Go project
+
+# Build the application
+all: build test
+
+build:
+	@echo "Building..."
+	@go build -o main cmd/api/main.go
+
+# Run the application
+run:
+	@go run cmd/api/main.go
+
+# Create DB container
+docker-run:
+	@if docker compose up --build 2>/dev/null; then \
+		: ; \
+	else \
+		echo "Falling back to Docker Compose V1"; \
+		docker-compose up --build; \
+	fi
+
+# Shutdown DB container
+docker-down:
+	@if docker compose down 2>/dev/null; then \
+		: ; \
+	else \
+		echo "Falling back to Docker Compose V1"; \
+		docker-compose down; \
+	fi
+
+# Test the application
+test:
+	@echo "Testing..."
+	@go test ./... -v
+
+# Integration Tests for the application
+itest:
+	@echo "Running integration tests..."
+	@go test ./internal/database -v
+
+# Clean the binary
+clean:
+	@echo "Cleaning..."
+	@rm -f main
+
+# Live Reload
+watch:
+	@if command -v air > /dev/null; then \
+            air; \
+            echo "Watching...";\
+        else \
+            read -p "Go's 'air' is not installed on your machine. Do you want to install it? [Y/n] " choice; \
+            if [ "$$choice" != "n" ] && [ "$$choice" != "N" ]; then \
+                go install github.com/air-verse/air@latest; \
+                air; \
+                echo "Watching...";\
+            else \
+                echo "You chose not to install air. Exiting..."; \
+                exit 1; \
+            fi; \
+        fi
+
+.PHONY: all build run test clean watch docker-run docker-down itest generate goose_create
+
+generate:
+	cd sqlc && sqlc generate
+
+goose_create:
+	@read -p "Migration name: " name; goose create -s $$name sql
+`
+
 	_, err = f.WriteString(content)
 	if err != nil {
 		log.Fatalf("failed to write to Makefile: %v", err)
 	}
-
 }
 
 func AddDatabaseTest(projectPath string) {

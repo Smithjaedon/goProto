@@ -39,13 +39,8 @@ func createAPIStructure() {
 	scaffold.GenerateSqlcFiles(projectPath)
 	scaffold.GenerateReadmeFile(projectPath)
 	scaffold.GenerateGooseFiles(projectPath)
-	scaffold.AppendToMakefile(projectPath)
+	scaffold.WriteMakefile(projectPath)
 
-	// handlers
-	err = os.Mkdir(projectPath+"/internal/server/handlers", 0755)
-	if err != nil {
-		log.Fatalf("failed to create handlers directory: %v", err)
-	}
 }
 
 func initInTmp() {
