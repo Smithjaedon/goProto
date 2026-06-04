@@ -6,11 +6,12 @@ import (
 )
 
 func GenerateReadmeFile(projectPath string) {
-	f, err := os.Create(projectPath + "/goProto.md")
-	if err != nil {
-		log.Fatalf("failed to create README file at %s: %v", projectPath+"/goProto.md", err)
-	}
+	readmePath := projectPath + "/goproto.md"
 
+	f, err := os.Create(readmePath)
+	if err != nil {
+		log.Fatalf("failed to create README file at %s: %v", readmePath, err)
+	}
 	defer f.Close()
 
 	content := `# GoProto
@@ -42,6 +43,7 @@ A personal CLI scaffolding tool for Go projects. GoProto automates the tedious p
 **Frameworks**
 
 - Gin
+
 **Databases**
 
 - PostgreSQL (via pgx)
@@ -121,9 +123,6 @@ This will copy the relevant template files directly into your project. GoProto s
 - [x] sqlc configuration generation
 - [x] Goose migration setup
 - [x] Makefile with common commands
-- [ ] ` + "`normal`" + ` project type
-- [ ] Template system (` + "`goproto add <template>`" + `)
-- [ ] Custom user templates
 
 ---
 
@@ -134,6 +133,6 @@ GoProto is a personal tool built for my own workflow. It's opinionated by design
 
 	_, err = f.WriteString(content)
 	if err != nil {
-		log.Fatalf("failed to write README content to %s: %v", projectPath+"/goproto.md", err)
+		log.Fatalf("failed to write README content to %s: %v", readmePath, err)
 	}
 }

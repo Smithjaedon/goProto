@@ -3,6 +3,7 @@ package scaffold
 import (
 	"log"
 	"os"
+	"os/exec"
 )
 
 func GenerateGooseFiles(projectPath string) {
@@ -25,5 +26,17 @@ GOOSE_MIGRATION_DIR=./migrations/
 	_, err = f.WriteString(content)
 	if err != nil {
 		log.Fatalf("failed to write goose env content to %s: %v", projectPath+"/.env", err)
+	}
+
+	cmd := exec.Command("openssl", "rand", "-hex", "32")
+	cmd.Dir = projectPath
+	secretKey, err := cmd.Output()
+	if err != nil {
+		log.Fatalf("failed to generate secret key: %v", err)
+	}
+
+	_, err = f.WriteString("SECRET_KEY=" + string(secretKey))
+	if err != nil {
+		log.Fatalf("failed to write secret key to .env file: %v", err)
 	}
 }

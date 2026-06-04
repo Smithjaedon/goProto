@@ -4,6 +4,7 @@ import (
 	"embed"
 	"log"
 	"os"
+	"os/exec"
 	"text/template"
 )
 
@@ -15,7 +16,7 @@ type ProjectConfig struct {
 	Database   string
 }
 
-func ModifyDatabase(projectPath, moduleName string) {
+func GenerateDatabaseFiles(projectPath, moduleName string) {
 	config := ProjectConfig{
 		ModuleName: moduleName,
 		Database:   "postgres",
@@ -23,6 +24,20 @@ func ModifyDatabase(projectPath, moduleName string) {
 
 	generateFile("templates/sqlc/database.go.tmpl", projectPath+"/internal/database/database.go", config)
 	generateFile("templates/sqlc/server.go.tmpl", projectPath+"/internal/server/server.go", config)
+	generateFile("templates/sqlc/user_queries.go.tmpl", projectPath+"/sqlc/queries/users.sql", config)
+	generateFile("templates/sqlc/user_schemas.go.tmpl", projectPath+"/sqlc/schemas/users.sql", config)
+	generateFile("templates/auth/routers.go.tmpl", projectPath+"/internal/server/routes.go", config)
+}
+
+func GenerateAuthFiles(projectPath, moduleName string) {
+	config := ProjectConfig{
+		ModuleName: moduleName,
+		Database:   "postgres",
+	}
+
+	generateFile("templates/auth/auth_handler.go.tmpl", projectPath+"/internal/server/auth_handler.go", config)
+	generateFile("templates/auth/auth.go.tmpl", projectPath+"/internal/middleware/auth.go", config)
+	generateFile("templates/add_users.go.tmpl", projectPath+"/migrations/00001_add_users.sql", config)
 }
 
 func generateFile(templatePath, outputPath string, config ProjectConfig) {
@@ -128,10 +143,26 @@ goose_create:
 	}
 }
 
-func AddDatabaseTest(projectPath string) {
+func AddDatabaseTest(projectPath, moduleName string) {
 	config := ProjectConfig{
-		ModuleName: "",
-		Database:   "",
+		ModuleName: moduleName,
+		Database:   "postgres",
 	}
 	generateFile("templates/database_test.go.tmpl", projectPath+"/internal/database/database_test.go", config)
+}
+
+func AuthDependencies(projectPath string) {
+	deps := []string{
+		"github.com/gin-gonic/gin",
+		"golang.org/x/crypto/bcrypt",
+		"github.com/google/uuid",
+	}
+
+	for _, dep := range deps {
+		cmd := exec.Command("go", "get", dep)
+		cmd.Dir = projectPath
+		if err := cmd.Run(); err != nil {
+			log.Fatalf("failed to install dependency %s: %v", dep, err)
+		}
+	}
 }

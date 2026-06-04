@@ -25,8 +25,6 @@ func runCreate(cmd *cobra.Command, args []string) {
 }
 
 func createAPIStructure() {
-	initInTmp()
-
 	projectPath, err := os.Getwd()
 	if err != nil {
 		log.Fatalf("failed to get current working directory in createAPIStructure: %v", err)
@@ -34,28 +32,43 @@ func createAPIStructure() {
 
 	dirName := filepath.Base(projectPath)
 
-	scaffold.ModifyDatabase(projectPath, dirName)
+	initInTmp(projectPath, dirName)
+
+	err = os.Mkdir(projectPath+"/internal/middleware", 0755)
+	if err != nil {
+		log.Fatalf("failed to create middleware directory: %v", err)
+	}
 
 	scaffold.GenerateSqlcFiles(projectPath)
-	scaffold.GenerateReadmeFile(projectPath)
 	scaffold.GenerateGooseFiles(projectPath)
+	scaffold.GenerateDatabaseFiles(projectPath, dirName)
+	scaffold.GenerateAuthFiles(projectPath, dirName)
+	scaffold.AuthDependencies(projectPath)
+	scaffold.AddDatabaseTest(projectPath, dirName)
 	scaffold.WriteMakefile(projectPath)
+	scaffold.GenerateReadmeFile(projectPath)
 
+	cmd := exec.Command("bash", "-c", "cd sqlc && sqlc generate")
+	cmd.Dir = projectPath
+	if err := cmd.Run(); err != nil {
+		log.Fatalf("failed to run sqlc generate: %v", err)
+	}
+
+	cmd = exec.Command("go", "mod", "tidy")
+	cmd.Dir = projectPath
+	if err := cmd.Run(); err != nil {
+		log.Fatalf("failed to run go mod tidy: %v", err)
+	}
+
+	fmt.Println("Project created successfully!")
 }
 
-func initInTmp() {
+func initInTmp(projectPath, dirName string) {
 	tmpDir, err := os.MkdirTemp("", "tmp")
 	if err != nil {
 		log.Fatalf("failed to create temp directory: %v", err)
 	}
 	defer os.RemoveAll(tmpDir)
-
-	projectPath, err := os.Getwd()
-	if err != nil {
-		log.Fatalf("failed to get current working directory: %v", err)
-	}
-
-	dirName := filepath.Base(projectPath)
 
 	cmd := exec.Command("go-blueprint", "create",
 		"--name", dirName,
@@ -77,6 +90,4 @@ func initInTmp() {
 	if err := mv.Run(); err != nil {
 		log.Fatalf("failed to move files from temporary blueprint: %v", err)
 	}
-
-	scaffold.AddDatabaseTest(projectPath)
 }

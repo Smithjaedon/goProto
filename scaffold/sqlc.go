@@ -3,23 +3,40 @@ package scaffold
 import (
 	"log"
 	"os"
-	"os/exec"
 )
 
 func GenerateSqlcFiles(projectPath string) {
-	os.Mkdir(projectPath+"/sqlc", 0755)
-	cmd := exec.Command("touch",
-		projectPath+"/sqlc/schema.sql",
-		projectPath+"/sqlc/query.sql")
-	if err := cmd.Run(); err != nil {
-		log.Fatalf("failed to create sqlc schema and queries files: %v", err)
+	dirs := []string{
+		projectPath + "/sqlc",
+		projectPath + "/sqlc/schemas",
+		projectPath + "/sqlc/queries",
+	}
+
+	for _, dir := range dirs {
+		if err := os.Mkdir(dir, 0755); err != nil {
+			log.Fatalf("failed to create directory '%s': %v", dir, err)
+		}
+	}
+
+	// Create empty placeholder files — GenerateDatabaseFiles will write the real content
+	placeholders := []string{
+		projectPath + "/sqlc/schemas/users.sql",
+		projectPath + "/sqlc/queries/users.sql",
+	}
+
+	for _, path := range placeholders {
+		f, err := os.Create(path)
+		if err != nil {
+			log.Fatalf("failed to create file '%s': %v", path, err)
+		}
+		f.Close()
 	}
 
 	content := `version: "2"
 sql:
   - engine: "postgresql"
-    queries: "query.sql"
-    schema: "schema.sql"
+    queries: "queries/"
+    schema: "schemas/"
     gen:
       go:
         package: "db"
