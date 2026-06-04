@@ -46,7 +46,6 @@ func createAPIStructure() {
 	scaffold.AuthDependencies(projectPath)
 	scaffold.AddDatabaseTest(projectPath, dirName)
 	scaffold.WriteMakefile(projectPath)
-	scaffold.GenerateReadmeFile(projectPath)
 
 	cmd := exec.Command("bash", "-c", "cd sqlc && sqlc generate")
 	cmd.Dir = projectPath
@@ -60,7 +59,36 @@ func createAPIStructure() {
 		log.Fatalf("failed to run go mod tidy: %v", err)
 	}
 
-	fmt.Println("Project created successfully!")
+	fmt.Println(`
+	✔ Project scaffolded successfully!
+ 
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ 
+  Your project is ready. Here's how to get started:
+ 
+  1. Configure your environment
+     Open .env and update your database credentials,
+     Goose DB string, and port if needed.
+     Your JWT secret has already been generated for you.
+ 
+  2. Run your migrations
+     goose up
+ 
+  3. Start the dev server
+     make watch
+ 
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ 
+  Useful commands:
+ 
+    make watch          Start dev server with live reload
+    make generate       Regenerate SQLc type-safe Go code
+    make goose-create   Create a new migration file
+ 
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ 
+  Happy building!
+ `)
 }
 
 func initInTmp(projectPath, dirName string) {

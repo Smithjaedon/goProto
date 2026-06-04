@@ -27,6 +27,7 @@ func GenerateDatabaseFiles(projectPath, moduleName string) {
 	generateFile("templates/sqlc/user_queries.go.tmpl", projectPath+"/sqlc/queries/users.sql", config)
 	generateFile("templates/sqlc/user_schemas.go.tmpl", projectPath+"/sqlc/schemas/users.sql", config)
 	generateFile("templates/auth/routers.go.tmpl", projectPath+"/internal/server/routes.go", config)
+	generateFile("templates/readme/readme.go.tmpl", projectPath+"/README.md", config)
 }
 
 func GenerateAuthFiles(projectPath, moduleName string) {
