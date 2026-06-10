@@ -41,6 +41,8 @@ sql:
       go:
         package: "db"
         out: "../db"
+        emit_json_tags: true
+        emit_empty_slices: true
 `
 
 	file, err := os.Create(projectPath + "/sqlc/sqlc.yaml")
